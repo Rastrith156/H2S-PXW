@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Smart Mobility AI Luxe Edition</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, .18), transparent 25%),
+                radial-gradient(circle at 80% 10%, rgba(168, 85, 247, .16), transparent 25%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, .12), transparent 25%),
+                linear-gradient(135deg, #020617, #0f172a, #111827);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 28px;
+            background: rgba(255, 255, 255, .04);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px
+        }
+
+        button {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .25s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.08)
+        }
+
+        .primary {
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            color: #fff
+        }
+
+        .ghost {
+            background: rgba(255, 255, 255, .06);
+            color: #fff
+        }
+
+        .danger {
+            background: linear-gradient(90deg, #dc2626, #ef4444);
+            color: #fff
+        }
+
+        .wrap {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 18px;
+            padding: 18px;
+        }
+
+        .panel,
+        .mapbox,
+        .card {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .08);
+            backdrop-filter: blur(12px);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .25);
+        }
+
+        .panel,
+        .card {
+            padding: 18px
+        }
+
+        .hero {
+            font-size: 12px;
+            letter-spacing: 2px;
+            opacity: .7;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px
+        }
+
+        .sub {
+            opacity: .8;
+            font-size: 14px;
+            margin-bottom: 12px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 13px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 14px;
+            background: #0f172a;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .input-wrap {
+            display: flex;
+            align-items: center;
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, .06);
+        }
+
+        .input-wrap input {
+            background: transparent;
+            border: none;
+            margin: 0;
+        }
+
+        .icon {
+            margin-right: 8px;
+            opacity: .8
+        }
+
+        .swap-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 700;
+            align-self: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            background: #0b1220;
+            padding: 14px;
+            border-radius: 18px;
+        }
+
+        .label {
+            font-size: 13px;
+            opacity: .75
+        }
+
+        .value {
+            margin-top: 8px;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, #93c5fd, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #map {
+            width: 100%;
+            height: 760px;
+            border-radius: 22px;
+        }
+
+        .list {
+            line-height: 1.8;
+            opacity: .9
+        }
+
+        .footer {
+            text-align: center;
+            padding: 14px;
+            opacity: .65;
+            font-size: 13px
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #14532d;
+            color: #bbf7d0;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        @media(max-width:1100px) {
+            .wrap {
+                grid-template-columns: 1fr
+            }
+
+            #map {
+                height: 520px
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand">◆ Smart Mobility AI Luxe Edition</div>
+        <div class="top-actions">
+            <button class="ghost" onclick="locateMe()">⌖ My Location</button>
+            <button class="danger" onclick="sos()">✦ SOS</button>
+        </div>
+    </header>
+
+    <div class="wrap">
+
+        <section>
+
+            <div class="panel">
+                <div class="hero">Next Generation Urban Intelligence</div>
+                <h1>Luxury Route Command Center</h1>
+                <div class="sub">Real-time navigation • Safety analytics • Smart mobility decisions</div>
+
+                <div class="search-box">
+
+                    <div class="input-wrap">
+                        <span class="icon">◎</span>
+                        <input id="source" placeholder="Enter pickup location">
+                    </div>
+
+                    <div class="swap-btn" onclick="swapLocations()">⇅</div>
+
+                    <div class="input-wrap">
+                        <span class="icon">◆</span>
+                        <input id="destination" placeholder="Enter destination">
+                    </div>
+
+                    <select id="mode">
+                        <option value="car">🚗 Driving</option>
+                        <option value="bike">🏍 Bike</option>
+                        <option value="walk">🚶 Walking</option>
+                    </select>
+
+                    <button class="primary" onclick="showRoute()">Analyze Premium Route</button>
+
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <div class="grid">
+                    <div class="stat">
+                        <div class="label">◷ ETA</div>
+                        <div class="value" id="eta">--</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">◫ Distance</div>
+                        <div class="value" id="distance">--</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">⬢ Safety Score</div>
+                        <div class="value" id="safety">--</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">⬡ Traffic Risk</div>
+                        <div class="value" id="traffic">--</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">✺ CO₂ Saved</div>
+                        <div class="value" id="co2">--</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">✧ Route Score</div>
+                        <div class="value" id="score">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>✦ AI Concierge Recommendation</h3>
+                <div id="ai" class="list">Enter route details to receive premium smart guidance.</div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>✦ Ride Comparison</h3>
+                <div class="grid">
+                    <div class="stat">
+                        <div class="label">Uber</div>
+                        <div class="value" id="uberPrice">--</div><small id="uberEta">--</small>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Ola</div>
+                        <div class="value" id="olaPrice">--</div><small id="olaEta">--</small>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Rapido</div>
+                        <div class="value" id="rapidoPrice">--</div><small id="rapidoEta">--</small>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Best Choice</div>
+                        <div class="value" id="bestRide">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <span class="badge">Emergency Ready</span>
+                <h3>✦ Premium Safety Services</h3>
+                <div class="list">
+                    • Nearest Hospital Assistance<br>
+                    • Police Support Access<br>
+                    • Live Location Sharing<br>
+                    • One-Tap Emergency Alert
+                </div>
+            </div>
+
+        </section>
+
+        <section class="mapbox">
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <div class="footer">
+        Built for elite hackathon demos • Fast • Elegant • Intelligent • Scalable
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        const map = L.map('map').setView([12.9716, 77.5946], 11);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let routingControl;
+        let userMarker;
+
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function swapLocations() {
+            let s = document.getElementById("source").value;
+            let d = document.getElementById("destination").value;
+            document.getElementById("source").value = d;
+            document.getElementById("destination").value = s;
+        }
+
+        async function geocode(place) {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
+            const data = await res.json();
+
+            if (!data.length) {
+                alert("Location not found");
+                return null;
+            }
+
+            return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+
+        async function showRoute() {
+            const source = document.getElementById("source").value.trim();
+            const destination = document.getElementById("destination").value.trim();
+
+            if (!source || !destination) {
+                alert("Enter source and destination");
+                return;
+            }
+
+            const a = await geocode(source);
+            const b = await geocode(destination);
+            if (!a || !b) return;
+
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(a[0], a[1]),
+                    L.latLng(b[0], b[1])
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false
+            }).addTo(map);
+
+            routingControl.on("routesfound", function (e) {
+
+                const route = e.routes[0];
+                const km = route.summary.totalDistance / 1000;
+                const mins = Math.round(route.summary.totalTime / 60);
+
+                const safety = clamp(Math.round(95 - km / 8 - mins / 3), 55, 98);
+                const traffic = mins > 120 ? "High" : mins > 45 ? "Moderate" : "Low";
+                const co2 = (km * 0.21).toFixed(1) + " kg";
+                const score = clamp(Math.round((safety * 0.5) + (traffic === "Low" ? 30 : 20) + (mins < 60 ? 20 : 10)), 60, 99);
+
+                document.getElementById("eta").innerText = mins + " mins";
+                document.getElementById("distance").innerText = km.toFixed(1) + " km";
+                document.getElementById("safety").innerText = safety + "/100";
+                document.getElementById("traffic").innerText = traffic;
+                document.getElementById("co2").innerText = co2;
+                document.getElementById("score").innerText = score + "/100";
+
+                const uber = Math.round(80 + km * 14);
+                const ola = Math.round(70 + km * 13);
+                const rapido = Math.round(50 + km * 11);
+
+                document.getElementById("uberPrice").innerText = "₹" + uber;
+                document.getElementById("olaPrice").innerText = "₹" + ola;
+                document.getElementById("rapidoPrice").innerText = "₹" + rapido;
+
+                document.getElementById("uberEta").innerText = "Pickup: 12 min";
+                document.getElementById("olaEta").innerText = "Pickup: 10 min";
+                document.getElementById("rapidoEta").innerText = "Pickup: 8 min";
+
+                let best = rapido < ola && rapido < uber ? "Rapido" : (ola < uber ? "Ola" : "Uber");
+                document.getElementById("bestRide").innerText = best;
+
+                fetch("/ai-route", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        source: source,
+                        destination: destination,
+                        distance: km.toFixed(1) + " km",
+                        eta: mins + " mins",
+                        traffic: traffic
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById("ai").innerText = data.result;
+                    })
+                    .catch(() => {
+                        document.getElementById("ai").innerText =
+                            "Smart route selected using travel analytics.";
+                    });
+
+            });
+        }
+
+        function locateMe() {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                map.setView([lat, lng], 14);
+
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+
+                userMarker = L.marker([lat, lng]).addTo(map)
+                    .bindPopup("Current Location")
+                    .openPopup();
+
+                document.getElementById("source").value = lat + "," + lng;
+
+            }, function () {
+                alert("Location permission denied");
+            });
+        }
+
+        function sos() {
+            alert("🚨 Premium Emergency Mode Activated! Preparing location sharing and nearby assistance.");
+        }
+    </script>
+
+</body>
+
+</html>
